@@ -148,7 +148,7 @@ function refresh() {
   if (hiss) hiss.gain.value = power && !onAir ? vol * 0.06 : 0;
   var btns = document.querySelectorAll(".preset");
   for (var i = 0; i < 6; i++) {
-    btns[i].classList.toggle("on", presets[i] === freq);
+    btns[i].classList.toggle("on", power && presets[i] === freq);
     btns[i].lastChild.textContent = presets[i] == null ? "—" : presets[i].toFixed(1);
   }
 }
