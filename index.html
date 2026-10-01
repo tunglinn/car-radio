@@ -22,18 +22,19 @@
   .dial { flex: 1; margin: 0 16px; height: 112px; position: relative; overflow: hidden; border-radius: 6px; cursor: pointer; color: #ffb347;
     background: radial-gradient(ellipse at 50% 60%, #3a2508, #120a02 75%); box-shadow: inset 0 2px 12px #000, 0 1px #555; transition: filter .4s; }
   .dial.off { filter: brightness(.3) saturate(.3); }
-  .tick { position: absolute; top: 30px; width: 1px; height: 8px; background: currentColor; opacity: .7; }
+  .tick { position: absolute; left: var(--p); top: 30px; width: 1px; height: 8px; background: currentColor; opacity: .7; }
   .tick.major { height: 14px; top: 24px; opacity: 1; }
-  .label { position: absolute; top: 8px; font-size: 11px; transform: translateX(-50%); text-shadow: 0 0 4px #ff9d1f; }
-  .dot { position: absolute; top: 44px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; opacity: .6; }
-  .needle { position: absolute; top: 4px; bottom: 30px; width: 2px; margin-left: -1px; background: #ff3b2f; box-shadow: 0 0 6px #ff3b2f; transition: left .08s; }
+  .label { position: absolute; left: var(--p); top: 8px; font-size: 11px; transform: translateX(-50%); text-shadow: 0 0 4px #ff9d1f; }
+  .dot { position: absolute; left: var(--p); top: 44px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; opacity: .6; }
+  .needle { position: absolute; left: var(--p); top: 4px; bottom: 30px; width: 2px; margin-left: -1px; background: #ff3b2f; box-shadow: 0 0 6px #ff3b2f; transition: left .08s, top .08s; }
   .readout { position: absolute; left: 12px; right: 12px; bottom: 8px; display: flex; justify-content: space-between; align-items: baseline;
     font-family: "Courier New", monospace; font-size: 15px; text-shadow: 0 0 6px #ff9d1f; white-space: nowrap; }
   .readout span:last-child { overflow: hidden; text-overflow: ellipsis; margin-left: 12px; }
   .lamp { position: absolute; right: 12px; top: 48px; font-size: 9px; letter-spacing: 1px; color: #ff3b2f; opacity: .15; }
   .lamp.on { opacity: 1; text-shadow: 0 0 6px #ff3b2f; }
 
-  .knob { position: relative; width: 76px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; font-size: 10px; letter-spacing: 1px; color: #999; }
+  .capwrap { position: relative; } /* label stays centered on its own knob wherever the knob sits */
+  .knob { width: 76px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; font-size: 10px; letter-spacing: 1px; color: #999; }
   .cap { width: var(--cap); height: var(--cap); flex: none; border-radius: 50%; position: relative; touch-action: none; cursor: ns-resize;
     background: radial-gradient(circle at 50% 50%, #5a5a5a 0 52%, #2a2a2a 54% 58%, transparent 59%), repeating-conic-gradient(#111 0 5deg, #4a4a4a 5deg 10deg);
     box-shadow: 0 5px 10px #000, 0 0 0 2px #0a0a0a; }
@@ -62,22 +63,40 @@
     .seek button { width: 42px; padding: 10px 0; }
     .seek #pwr { width: 88px; }
   }
-  @media (max-width: 520px) {
+  @media (max-width: 520px) and (orientation: landscape) {
     .dial { flex-basis: 100%; order: -1; margin: 0 0 16px; }
+  }
+  /* Portrait phones: vertical dial on the left, knobs stacked on the right, presets 3x2 below */
+  @media (max-width: 520px) and (orientation: portrait) {
+    .unit { height: min(calc(100dvh - 32px), 760px); display: flex; flex-direction: column; }
+    .top { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr auto; grid-template-areas: "dial vol" "dial tune"; column-gap: 16px; }
+    .dial { grid-area: dial; margin: 0; height: auto; }
+    .knob:first-child { grid-area: vol; justify-content: flex-start; }
+    .knob:last-child { grid-area: tune; justify-content: flex-end; }
+    .tick { top: calc(100% - var(--p)); left: 36px; width: 8px; height: 1px; }
+    .tick.major { top: calc(100% - var(--p)); left: 30px; width: 14px; height: 1px; }
+    .label { top: calc(100% - var(--p)); left: 6px; transform: translateY(-50%); }
+    .dot { top: calc(100% - var(--p)); left: 50px; margin: -2px 0 0; }
+    .needle { top: calc(100% - var(--p)); left: 4px; width: 56px; bottom: auto; height: 2px; margin: -1px 0 0; }
+    .readout { left: 64px; right: 8px; top: 50%; bottom: auto; transform: translateY(-50%); flex-direction: column; align-items: center; text-align: center; white-space: normal; }
+    .readout #freq { font-size: 22px; margin-bottom: 8px; }
+    .readout span:last-child { margin-left: 0; }
+    .lamp { top: 12px; right: 0; left: 64px; text-align: center; }
+    .presets { grid-template-columns: repeat(3, 1fr); row-gap: 10px; }
   }
 </style>
 </head>
 <body>
 <div class="unit">
   <div class="top">
-    <div class="knob"><div class="cap" id="vol"></div><span class="face">VOL</span>
+    <div class="knob"><div class="capwrap"><div class="cap" id="vol"></div><span class="face">VOL</span></div>
       <div class="seek"><button id="pwr" title="Power (space, or click the VOL knob)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 2v9"/><path d="M6.3 5.7a8 8 0 1 0 11.4 0"/></svg></button></div></div>
     <div class="dial off" id="dial">
       <div class="needle" id="needle"></div>
       <div class="lamp" id="lamp">STEREO</div>
       <div class="readout"><span id="freq"></span><span id="status"></span></div>
     </div>
-    <div class="knob"><div class="cap" id="tune"></div><span class="face">TUNE</span>
+    <div class="knob"><div class="capwrap"><div class="cap" id="tune"></div><span class="face">TUNE</span></div>
       <div class="seek"><button id="seekDown" title="Seek down (shift+←)">◀◀</button><button id="seekUp" title="Seek up (shift+→)">▶▶</button></div></div>
   </div>
   <div class="presets" id="presets"></div>
@@ -109,17 +128,17 @@ var power = false, station = null, onAir = false, failed = false, hls = null, ti
 for (var f = LO; f <= HI; f++) {
   var t = document.createElement("div");
   t.className = f % 2 ? "tick" : "tick major";
-  t.style.left = pct(f) + "%";
+  t.style.setProperty("--p", pct(f) + "%");
   dial.appendChild(t);
   if (f % 2 === 0) {
     var l = document.createElement("div");
-    l.className = "label"; l.textContent = f; l.style.left = pct(f) + "%";
+    l.className = "label"; l.textContent = f; l.style.setProperty("--p", pct(f) + "%");
     dial.appendChild(l);
   }
 }
 STATIONS.forEach(function (s) {
   var d = document.createElement("div");
-  d.className = "dot"; d.style.left = pct(s.f) + "%";
+  d.className = "dot"; d.style.setProperty("--p", pct(s.f) + "%");
   dial.appendChild(d);
 });
 
@@ -137,7 +156,7 @@ function initHiss() {
 }
 
 function refresh() {
-  $("needle").style.left = pct(freq) + "%";
+  $("needle").style.setProperty("--p", pct(freq) + "%");
   $("tune").style.transform = "rotate(" + (freq - LO) * 90 + "deg)";
   $("vol").style.transform = "rotate(" + (-135 + vol * 270) + "deg)";
   dial.classList.toggle("off", !power);
@@ -240,7 +259,11 @@ function knob(el, onTurn, onClick) {
 }
 knob($("vol"), function (d) { setVol(vol + d * 0.005); }, function () { setPower(!power); });
 knob($("tune"), function (d) { setFreq(freq + d * 0.025); });
-dial.onclick = function (e) { var r = dial.getBoundingClientRect(); setFreq(LO + ((e.clientX - r.left) / r.width * 100 - 5) / 90 * (HI - LO)); };
+dial.onclick = function (e) {
+  var r = dial.getBoundingClientRect(), vertical = r.height > r.width; // portrait phones: 88 at the bottom, 108 at the top
+  var p = vertical ? (r.bottom - e.clientY) / r.height : (e.clientX - r.left) / r.width;
+  setFreq(LO + (p * 100 - 5) / 90 * (HI - LO));
+};
 
 // Presets: tap to recall, hold to store
 presets.forEach(function (p, i) {
